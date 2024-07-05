@@ -2,16 +2,19 @@
   "name": "stage-1",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@maxmind/geoip2-node": "^5.0.0",
     "axios": "^1.7.2",
     "express": "^4.19.2",
+    "maxmind": "^4.3.20",
     "railway": "^2.0.17"
   }
 }

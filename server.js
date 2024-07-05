@@ -3,20 +3,39 @@ const axios = require('axios');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-//API key
+//  OpenWeatherMap API key
 const OPENWEATHERMAP_API_KEY = '914b5c8e72ce34e8d944f20aa7e1355a';
 
 app.get('/', async (req, res) => {
-  const clientIp = req.ip === '::1' ? '127.0.0.1' : req.ip; // Handle localhost address
+  let clientIp = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
+
+  // Handle IPv6 loopback address and private IP addresses for testing purposes
+  if (clientIp.startsWith('::ffff:')) {
+    clientIp = clientIp.split(':').pop();
+  }
+
+  if (clientIp === '::1' || clientIp === '127.0.0.1') {
+    clientIp = '8.8.8.8'; // Use a default public IP address for testing
+  }
+
+  const name = req.query.name || 'Mark'; // Get the name from the query parameter
 
   try {
-    // Get location and weather data from IP
-    const weatherResponse = await axios.get(`http://api.openweathermap.org/data/2.5/weather?q=New York&units=metric&appid=${OPENWEATHERMAP_API_KEY}`);
+    // Get location data from IP using ip-api.com
+    const ipApiResponse = await axios.get(`http://ip-api.com/json/${clientIp}?fields=status,message,city`);
+    const locationData = ipApiResponse.data;
+
+    if (locationData.status !== 'success') {
+      return res.status(500).json({ error: 'Unable to determine location from IP address' });
+    }
+
+    const city = locationData.city || 'Unknown location';
+
+    // Get weather data
+    const weatherResponse = await axios.get(`https://api.openweathermap.org/data/2.5/weather?q=${city}&units=metric&appid=${OPENWEATHERMAP_API_KEY}`);
     const weatherData = weatherResponse.data;
 
-    const city = weatherData.name;
     const temperature = weatherData.main.temp;
-    const name = 'Mark'; // Replace with dynamic data if needed
 
     res.json({
       client_ip: clientIp,
@@ -25,10 +44,19 @@ app.get('/', async (req, res) => {
     });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: 'An error occurred while fetching data' });
+    // Enhanced error handling
+    if (error.response && error.response.status === 403) {
+      res.status(403).json({ error: 'API key is invalid or has exceeded rate limits' });
+    } else if (error.response && error.response.status === 404) {
+      res.status(404).json({ error: 'The requested resource was not found' });
+    } else if (error.response && error.response.status === 500) {
+      res.status(500).json({ error: 'Internal server error from IP geolocation or weather API' });
+    } else {
+      res.status(500).json({ error: 'An unknown error occurred' });
+    }
   }
 });
 
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
-});
+}); 
