@@ -6,7 +6,7 @@ const PORT = process.env.PORT || 3000;
 //  OpenWeatherMap API key
 const OPENWEATHERMAP_API_KEY = '914b5c8e72ce34e8d944f20aa7e1355a';
 
-app.get('/', async (req, res) => {
+app.get('/api/hello', async (req, res) => {
   let clientIp = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
 
   // Handle IPv6 loopback address and private IP addresses for testing purposes
@@ -18,7 +18,7 @@ app.get('/', async (req, res) => {
     clientIp = '8.8.8.8'; // Use a default public IP address for testing
   }
 
-  const name = req.query.name || 'Mark'; // Get the name from the query parameter
+  const visitor_name = req.query.name || 'Mark'; // Get the name from the query parameter
 
   try {
     // Get location data from IP using ip-api.com
@@ -40,7 +40,7 @@ app.get('/', async (req, res) => {
     res.json({
       client_ip: clientIp,
       location: city,
-      greeting: `Hello, ${name}!, the temperature is ${temperature} degrees Celsius in ${city}`
+      greeting: `Hello, ${visitor_name}!, the temperature is ${temperature} degrees Celsius in ${city}`
     });
   } catch (error) {
     console.error(error);
