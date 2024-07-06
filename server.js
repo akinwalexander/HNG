@@ -18,7 +18,7 @@ app.get('/api/hello', async (req, res) => {
     clientIp = '8.8.8.8'; // Use a default public IP address for testing
   }
 
-  const visitor_name = req.query.name || 'Mark'; // Get the name from the query parameter
+  const visitor_name = req.query.visitor_name || 'Mark'; // Get the name from the query parameter
 
   try {
     // Get location data from IP using ip-api.com
