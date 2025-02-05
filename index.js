@@ -14,6 +14,7 @@ function isPrime(n) {
 }
 
 function isPerfect(n) {
+    if (n < 1) return false;
     let sum = 1;
     for (let i = 2; i * i <= n; i++) {
         if (n % i === 0) {
@@ -25,6 +26,7 @@ function isPerfect(n) {
 }
 
 function isArmstrong(n) {
+    if (n < 0) return false;
     let sum = 0, temp = n, digits = n.toString().length;
     while (temp > 0) {
         sum += Math.pow(temp % 10, digits);
