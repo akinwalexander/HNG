@@ -25,66 +25,61 @@ function isPerfect(n) {
     return sum === n && n !== 1;
 }
 
-function isArmstrong(n) {
-    if (n < 0) return false;
-    let sum = 0, temp = n, digits = n.toString().length;
-    while (temp > 0) {
-        sum += Math.pow(temp % 10, digits);
-        temp = Math.floor(temp / 10);
-    }
-    return sum === n;
-}
-
-function digitSum(n) {
-    return Math.abs(n).toString().split('').reduce((sum, digit) => sum + parseInt(digit), 0);
-}
-
-
-app.get('/api/classify-number', async (req, res) => {
-    const { number } = req.query;
-    if (!number || number.trim() === "") {
-        return res.status(400).json({
-            error: true,
-            message: "Missing input. Please provide a number as a query parameter."
-        });
-    }
-    
-    const num = parseInt(number);
-    
-    if (isNaN(num) || !Number.isInteger(num)) {
-        return res.status(400).json({
-            error: true,
-            message: "Invalid input. Please provide a valid integer."
-        });
-    }
+function getProperties(n) {
     const properties = [];
-    if (isPrime(num)) properties.push("prime");
-    if (isPerfect(num)) properties.push("perfect");
-    if (isArmstrong(num)) properties.push("armstrong");
-    properties.push(num % 2 === 0 ? "even" : "odd");
+    if (n >= 0 && isPrime(n)) properties.push("prime");
+    if (isPerfect(n)) properties.push("perfect");
+    properties.push(n % 2 === 0 ? "even" : "odd");
+    return properties;
+}
+
+app.get("/api/classify-number", async (req, res) => {
+    const input = req.query.number?.trim();
+    if (!input || !/^-?\d+$/.test(input)) {
+        return res.status(400).json({
+            number: "alphabet",
+            error: true,
+            message: "Invalid number. Please provide an integer.",
+        });
+    }
+    
+    const num = parseInt(input, 10);
+    if (num < -Number.MAX_SAFE_INTEGER || num > Number.MAX_SAFE_INTEGER) {
+        return res.status(400).json({ number: "alphabet", error: true });
+    }
+    
+    const properties = getProperties(num);
+    const digitSum = Math.abs(num)
+        .toString()
+        .split("")
+        .reduce((sum, d) => sum + parseInt(d), 0);
     
     try {
-        const response = await axios.get(`http://numbersapi.com/${num}/math`);
-        const funFact = response.data;
-        res.json({
+        const funFactResponse = await axios.get(
+            `http://numbersapi.com/${num}/math`
+        );
+        const funFact = funFactResponse.data;
+        return res.json({
             number: num,
             is_prime: isPrime(num),
             is_perfect: isPerfect(num),
             properties,
-            digit_sum: digitSum(num),
-            fun_fact: funFact.trim(),
+            digit_sum: num < 0 ? -digitSum : digitSum,
+            fun_fact: funFact,
         });
     } catch (error) {
-        res.json({
+        return res.json({
             number: num,
             is_prime: isPrime(num),
             is_perfect: isPerfect(num),
             properties,
-            digit_sum: digitSum(num),
-            fun_fact: "No fun fact available."
+            digit_sum: num < 0 ? -digitSum : digitSum,
+            fun_fact: "No fun fact available.",
         });
     }
 });
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+
+
