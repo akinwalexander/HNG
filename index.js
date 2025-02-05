@@ -36,16 +36,27 @@ function isArmstrong(n) {
 }
 
 function digitSum(n) {
-    return n.toString().split('').reduce((sum, digit) => sum + parseInt(digit), 0);
+    return Math.abs(n).toString().split('').reduce((sum, digit) => sum + parseInt(digit), 0);
 }
+
 
 app.get('/api/classify-number', async (req, res) => {
     const { number } = req.query;
-    const num = parseInt(number);
-    if (isNaN(num)) {
-        return res.status(400).json({ number: "Alphabet", error: true });
+    if (!number || number.trim() === "") {
+        return res.status(400).json({
+            error: true,
+            message: "Missing input. Please provide a number as a query parameter."
+        });
     }
     
+    const num = parseInt(number);
+    
+    if (isNaN(num) || !Number.isInteger(num)) {
+        return res.status(400).json({
+            error: true,
+            message: "Invalid input. Please provide a valid integer."
+        });
+    }
     const properties = [];
     if (isPrime(num)) properties.push("prime");
     if (isPerfect(num)) properties.push("perfect");
