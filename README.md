@@ -16,7 +16,14 @@ This **API classifies numbers based on their mathematical properties and provide
 
 * Supports CORS (Cross-Origin Resource Sharing).
 
-## **Endpoints**
+  The api is deployed and publicly accessible
+
+  ---
+  ## **LIVE URL**
+  [https://hng-omega.vercel.app/api/classify-number?number=49](#)
+  ---
+
+## **Endpoints: Get API Information**
 
 **GET** `/api/classify-number`
 
